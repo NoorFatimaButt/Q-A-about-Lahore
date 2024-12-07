@@ -1,0 +1,6 @@
+streamlit
+langchain_community
+wikipedia
+faiss-cpu
+pypdf
+groq
