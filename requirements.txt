@@ -4,3 +4,7 @@ wikipedia
 faiss-cpu
 pypdf
 groq
+langchain
+transformers
+torch
+sentence_transformers
