@@ -1,5 +1,3 @@
-# Lahore History Search App
-
 # Import required libraries
 import streamlit as st
 from langchain_community.tools import WikipediaQueryRun
@@ -13,7 +11,6 @@ from groq import Client
 # Function to query the Groq API using the Groq library
 def query_groq_api(prompt):
     try:
-        # Create the chat completion request
         completion = client.chat.completions.create(
             model=MODEL_NAME,  # Use your model here, e.g., "gemma-7b-it"
             messages=[{"role": "user", "content": prompt}],
@@ -23,14 +20,10 @@ def query_groq_api(prompt):
             stream=True,
             stop=None,
         )
-
-        # Collect the response content in a stream
         answer = ""
         for chunk in completion:
             answer += chunk.choices[0].delta.content or ""
-        
         return answer
-
     except Exception as e:
         return f"Error: {str(e)}"
 
@@ -38,7 +31,7 @@ def query_groq_api(prompt):
 def load_llm():
     def groq_pipeline(prompt):
         response = query_groq_api(prompt)
-        return response  # Directly return the answer from Groq API
+        return response
     return groq_pipeline
 
 # Streamlit app starts here
@@ -62,14 +55,22 @@ wiki_tool = WikipediaQueryRun(api_wrapper=api_wrapper)
 web_loader = WebBaseLoader("https://giu.edu.pk/history-lahore")
 web_docs = web_loader.load()
 
-# Load PDF documents
-pdf_loader = PyPDFLoader(r"C:\Users\InfoBay\Desktop\History-of-Lahore\lahore.pdf")
-pdf_docs = pdf_loader.load()
+# Upload PDF documents
+uploaded_pdf = st.file_uploader("Upload PDF file about Lahore's history", type=["pdf"])
+pdf_documents = []
 
-# Split documents into chunks
+if uploaded_pdf:
+    with st.spinner("Processing uploaded PDF..."):
+        pdf_loader = PyPDFLoader(uploaded_pdf)
+        pdf_docs = pdf_loader.load()
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        pdf_documents = text_splitter.split_documents(pdf_docs)
+else:
+    st.warning("Please upload a PDF file to include its contents in the search.")
+
+# Split web documents into chunks
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 web_documents = text_splitter.split_documents(web_docs)
-pdf_documents = text_splitter.split_documents(pdf_docs)
 
 # Combine all documents
 all_documents = web_documents + pdf_documents
