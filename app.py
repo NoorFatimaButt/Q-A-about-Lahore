@@ -55,18 +55,19 @@ wiki_tool = WikipediaQueryRun(api_wrapper=api_wrapper)
 web_loader = WebBaseLoader("https://giu.edu.pk/history-lahore")
 web_docs = web_loader.load()
 
-# Upload PDF documents
-uploaded_pdf = st.file_uploader("Upload PDF file about Lahore's history", type=["pdf"])
-pdf_documents = []
+# Specify the PDF file path in the 'data' directory
+pdf_file_path = "data/lahore.pdf"
 
-if uploaded_pdf:
-    with st.spinner("Processing uploaded PDF..."):
-        pdf_loader = PyPDFLoader(uploaded_pdf)
+# Load PDF documents
+pdf_documents = []
+try:
+    with st.spinner("Processing PDF..."):
+        pdf_loader = PyPDFLoader(pdf_file_path)
         pdf_docs = pdf_loader.load()
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         pdf_documents = text_splitter.split_documents(pdf_docs)
-else:
-    st.warning("Please upload a PDF file to include its contents in the search.")
+except FileNotFoundError:
+    st.warning(f"PDF file not found at: {pdf_file_path}. Please check the file path.")
 
 # Split web documents into chunks
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
